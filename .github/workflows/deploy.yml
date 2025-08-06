@@ -1,0 +1,81 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+  # Позволяет запускать workflow вручную из вкладки Actions
+  workflow_dispatch:
+
+# Устанавливает разрешения GITHUB_TOKEN для развертывания на GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Позволяет только одно одновременное развертывание, пропуская запуски, поставленные в очередь между уже выполняющимся и последним в очереди.
+# Однако НЕ отменяет выполняющиеся запуски, поскольку мы хотим завершить эти развертывания.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # Сборка приложения
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Run linting
+        run: yarn lint
+
+      - name: Run type checking
+        run: yarn tsc --noEmit
+
+      - name: Run tests
+        run: yarn test:all
+
+      - name: Build application
+        run: yarn build
+        env:
+          # Настройка базового URL для GitHub Pages
+          VITE_BASE_URL: /${{ github.event.repository.name }}/
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./build
+
+  # Развертывание на GitHub Pages
+  deploy:
+    # Добавляет зависимость от job build
+    needs: build
+
+    # Развертывание в среду github-pages
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    # Указывает runner для задания развертывания
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

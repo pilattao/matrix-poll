@@ -1,2 +1,0 @@
-namespace: 'matrix-poll'
-release-label: 'app.kubernetes.io/instance'

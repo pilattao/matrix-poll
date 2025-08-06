@@ -27,6 +27,7 @@ if (process.env.VITE_DEV_SSL === 'true') {
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: process.env.VITE_BASE_URL || '/',
   esbuild: {
     target: 'es2020',
   },

@@ -1,5 +1,0 @@
-# Use this file to add configurations for the dev environment and the PR deployments
-
-env:
-  - name: REACT_APP_IGNORE_USER_IDS
-    value: "@bot-dev:synapse.dev.nordeck.systems,@meetings-bot:synapse.dev.nordeck.systems"
